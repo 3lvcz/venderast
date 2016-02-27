@@ -1,6 +1,6 @@
 {
   "name": "venderast",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Frontend vendor packages bundler",
   "main": "index.js",
   "scripts": {
