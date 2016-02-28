@@ -7,7 +7,7 @@ var CleanCSS = require('clean-css');
 
 module.exports = function(config) {
 	if (!config) {
-		config = require('./venderast.json');
+		config = require(path.join(process.cwd(), 'venderast.json'));
 	}
 
 	var bundles = Object.keys(config.bundles);
@@ -48,7 +48,7 @@ module.exports = function(config) {
 						var target;
 
 						while ((res = reg.exec(content)) !== null) {
-							if (/^https?:\/\//i.test(res[1])) {
+							if (/^data:/i.test(res[1]) || /^https?:\/\//i.test(res[1])) {
 								continue;
 							}
 
