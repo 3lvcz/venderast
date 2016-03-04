@@ -1,10 +1,8 @@
 var gulp = require('gulp');
-var venderast = require('../../');
-var config = require('./venderast.json');
+var venderast = require('../../')(/*require('./venderast.json')*/);
 
-gulp.task('vendor', function(callback) {
-	venderast(config);
-	callback();
+gulp.task('vendor', function() {
+	return venderast.all();
 });
 
 gulp.task('default', ['vendor']);

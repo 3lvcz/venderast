@@ -1,3 +1,9 @@
+#IDE
+.idea
+#NODE
 node_modules
 bower_components
+#VENDERAST CACHE
+.venderast.json
+#EXAMPLE BUILDS
 examples/*/dist
