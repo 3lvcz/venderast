@@ -17,8 +17,8 @@
     "url": "https://github.com/3lvcz/venderast.git"
   },
   "dependencies": {
-    "async": "^1.5.2",
     "clean-css": "^3.4.9",
+    "co": "^4.6.0",
     "fs-extra": "^0.26.5",
     "node-uuid": "^1.4.7",
     "uglify-js": "^2.6.2"

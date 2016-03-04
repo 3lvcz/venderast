@@ -1,5 +1,8 @@
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
+const uuid = require('node-uuid');
 const expect = require('chai').expect;
 const util = require('../lib/util');
 
@@ -85,6 +88,46 @@ describe('util', () => {
 
             expect(typeof obj.a).to.equal('number');
             expect(typeof obj.b).to.equal('string');
+        });
+
+    });
+
+    describe('collectStats', () => {
+
+        it('returns a Promise', () => {
+            const promised = util.collectStats([]);
+            expect(promised).to.be.instanceof(Promise);
+        });
+
+        it('throws an Error if parameter is not an array', () => {
+            expect(() => {
+                util.collectStats({});
+            }).to.throw(Error);
+        });
+
+        it('resolves a file stat if it exists and no errors was occured else null', done => {
+            const self = path.resolve(__dirname, module.id);
+            const fake = path.resolve(__dirname, uuid.v4());
+
+            const selfMtime = fs.statSync(self).mtime.toJSON();
+            expect(selfMtime).to.be.ok;
+
+            util.collectStats([self, fake]).then(stats => {
+                expect(stats).to.be.instanceof(Array);
+                expect(stats).to.have.length(2);
+
+                expect(stats[0]).to.be.ok;
+                expect(stats[0].path).to.equal(self);
+                expect(stats[0].stat).to.be.ok
+                expect(stats[0].stat.mtime.toJSON())
+                    .to.equal(selfMtime);
+
+                expect(stats[1]).to.be.ok;
+                expect(stats[1].path).to.equal(fake);
+                expect(stats[1].stat).to.be.null;
+
+                done();
+            }).catch(done);
         });
 
     });

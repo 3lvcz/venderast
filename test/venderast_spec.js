@@ -1,7 +1,7 @@
 'use strict';
 
-const fs = require('fs-extra');
 const expect = require('chai').expect;
+const fs = require('../lib/fs');
 const Venderast = require('../lib/venderast');
 
 const base_config = {
@@ -82,10 +82,33 @@ describe('Venderast', () => {
 
             describe('bundle', () => {
 
-                this.refBundle = fs.readFileSync(__dirname +
+                const refBundle = fs.readFileSync(__dirname +
                     '/references/javascript/simple/main.js', 'utf8');
-                this.refMap = fs.readFileSync(__dirname +
+                const refMap = fs.readFileSync(__dirname +
                     '/references/javascript/simple/main.js.map', 'utf8');
+
+                const buildCheck = () => {
+                    const bundle = fs.readFileSync(__dirname +
+                        '/.tmp/main.js', 'utf8');
+                    const map = fs.readFileSync(__dirname +
+                        '/.tmp/main.js.map', 'utf8');
+
+                    expect(bundle).to.equal(refBundle);
+                    expect(map).to.equal(refMap);
+                };
+                const rebuildCheck = (expectRebuild) => {
+                    const bundle1 = fs.statSync(__dirname + '/.tmp/main.js');
+                    const map1 = fs.statSync(__dirname + '/.tmp/main.js.map');
+                    return () => {
+                        const bundle2 = fs.statSync(__dirname + '/.tmp/main.js');
+                        const map2 = fs.statSync(__dirname + '/.tmp/main.js.map');
+
+                        expect(bundle1.mtime.toJSON() === bundle2.mtime.toJSON())
+                            .to.equal(!expectRebuild);
+                        expect(map1.mtime.toJSON() === map2.mtime.toJSON())
+                            .to.equal(!expectRebuild);
+                    };
+                };
 
                 afterEach(done => {
                     fs.removeSync(__dirname + '/.tmp');
@@ -96,45 +119,162 @@ describe('Venderast', () => {
                 });
 
                 it('creates bundle and sourcemap', done => {
-                    const venderast = new Venderast(base_config);
-                    venderast.bundle('main.js').then(() => {
-                        const bundle = fs.readFileSync(__dirname +
-                            '/.tmp/main.js', 'utf8');
-                        const map = fs.readFileSync(__dirname +
-                            '/.tmp/main.js.map', 'utf8');
-
-                        expect(bundle).to.equal(this.refBundle);
-                        expect(map).to.equal(this.refMap);
-
+                    new Venderast(base_config).bundle('main.js').then(() => {
+                        buildCheck();
                         done();
                     }).catch(done);
                 });
 
-                // it('do not recompile a bundle when it is not modified', function(done) {
-                //     this.timeout(15000);
-                //
-                //     const bundlePath = __dirname + '/.tmp/main.js';
-                //     const mapPath = bundlePath + '.map';
-                //
-                //     new Venderast(base_config).bundle('main.js').then(() => {
-                //         const bundleMtime = fs.statSync(bundlePath).mtime;
-                //         const mapMtime = fs.statSync(mapPath).mtime;
-                //
-                //         new Venderast(base_config).bundle('main.js').then(() => {
-                //
-                //             console.log('2398472837648237647');
-                //
-                //             expect(fs.statSync(bundlePath).mtime)
-                //                 .to.equal(bundleMtime);
-                //             expect(fs.statSync(mapPath).mtime)
-                //                 .to.equal(mapMtime);
-                //
-                //             done();
-                //
-                //         }).catch(done);
-                //
-                //     }).catch(done);
-                // });
+                it('do not recompile a bundle, when source is not modified', done => {
+                    new Venderast(base_config).bundle('main.js').then(() => {
+
+                        const checkSameBuild = rebuildCheck(false);
+
+                        new Venderast(base_config).bundle('main.js').then(() => {
+
+                            checkSameBuild();
+                            done();
+
+                        }).catch(done);
+
+                    }).catch(done);
+                });
+
+                it('recompiles a bundle, when source is modified', done => {
+                    new Venderast(base_config).bundle('main.js').then(() => {
+
+                        const checkRebuild = rebuildCheck(true);
+
+                        const sourcePath = base_config.modules.main[2];
+
+                        const sourceContent = fs.readFileSync(sourcePath, 'utf8');
+
+                        fs.writeFileSync(sourcePath, sourceContent, 'utf8');
+
+                        new Venderast(base_config).bundle('main.js').then(() => {
+
+                            checkRebuild();
+                            done();
+
+                        }).catch(done);
+
+                    }).catch(done);
+                });
+
+                it('recompiles a bundle, when forceRebuild is true, even source is not modified', done => {
+                    new Venderast(base_config).bundle('main.js').then(() => {
+
+                        const checkRebuild = rebuildCheck(true);
+
+                        new Venderast(base_config).bundle('main.js', true).then(() => {
+
+                            checkRebuild();
+                            done();
+
+                        }).catch(done);
+
+                    }).catch(done);
+                });
+
+            });
+
+        });
+
+        describe('without_sourcemaps', () => {
+
+            describe('bundle', () => {
+
+                const config = Object.assign({ sourcemaps: false }, base_config);
+                const refBundle = fs.readFileSync(__dirname +
+                    '/references/javascript/without_sourcemaps/main.js', 'utf8');
+
+                const buildCheck = () => {
+                    const bundle = fs.readFileSync(__dirname +
+                        '/.tmp/main.js', 'utf8');
+                    let map = null;
+                    try {
+                        map = fs.statSync(__dirname +
+                            '/.tmp/main.js.map', 'utf8');
+                    } catch (e) { /* EMPTY */ }
+
+                    expect(bundle).to.equal(refBundle);
+                    expect(map).to.be.null;
+                };
+                const rebuildCheck = (expectRebuild) => {
+                    const bundle1 = fs.statSync(__dirname + '/.tmp/main.js');
+                    return () => {
+                        const bundle2 = fs.statSync(__dirname + '/.tmp/main.js');
+
+                        expect(bundle1.mtime.toJSON() === bundle2.mtime.toJSON())
+                            .to.equal(!expectRebuild);
+                    };
+                };
+
+                afterEach(done => {
+                    fs.removeSync(__dirname + '/.tmp');
+
+                    new Venderast(base_config)
+                        .clearCache()
+                        .then(done, done);
+                });
+
+                it('creates only a bundle', done => {
+                    new Venderast(config).bundle('main.js').then(() => {
+                        buildCheck();
+                        done();
+                    }).catch(done);
+                });
+
+                it('do not recompile a bundle, when source is not modified', done => {
+                    new Venderast(config).bundle('main.js').then(() => {
+
+                        const checkSameBuild = rebuildCheck(false);
+
+                        new Venderast(config).bundle('main.js').then(() => {
+
+                            checkSameBuild();
+                            done();
+
+                        }).catch(done);
+
+                    }).catch(done);
+                });
+
+                it('recompiles a bundle, when source is modified', done => {
+                    new Venderast(config).bundle('main.js').then(() => {
+
+                        const checkRebuild = rebuildCheck(true);
+
+                        const sourcePath = config.modules.main[2];
+
+                        const sourceContent = fs.readFileSync(sourcePath, 'utf8');
+
+                        fs.writeFileSync(sourcePath, sourceContent, 'utf8');
+
+                        new Venderast(config).bundle('main.js').then(() => {
+
+                            checkRebuild();
+                            done();
+
+                        }).catch(done);
+
+                    }).catch(done);
+                });
+
+                it('recompiles a bundle, when forceRebuild is true, even source is not modified', done => {
+                    new Venderast(config).bundle('main.js').then(() => {
+
+                        const checkRebuild = rebuildCheck(true);
+
+                        new Venderast(config).bundle('main.js', true).then(() => {
+
+                            checkRebuild();
+                            done();
+
+                        }).catch(done);
+
+                    }).catch(done);
+                });
 
             });
 

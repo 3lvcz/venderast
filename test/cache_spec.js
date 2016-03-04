@@ -1,7 +1,7 @@
 'use strict';
 
-const fs = require('fs-extra');
 const expect = require('chai').expect;
+const fs = require('../lib/fs');
 const Cache = require('../lib/cache');
 const path = require('path');
 const uuid = require('node-uuid');
