@@ -8,38 +8,6 @@ const util = require('../lib/util');
 
 describe('util', () => {
 
-    describe('stringIsNotEqual', () => {
-
-        it('throws an Error, when second argument is not an Array', () => {
-            expect(() => {
-                util.stringIsNotEqual('some string', 'not an array');
-            }).to.throw(Error);
-        });
-
-        it('returns a true when it should', () => {
-            const res = util.stringIsNotEqual('some string', [
-                'some another',
-                'some string2',
-                'some strinG',
-                'some strin'
-            ]);
-
-            expect(res).to.be.true;
-        });
-
-        it('returns a false when it should', () => {
-            const res = util.stringIsNotEqual('some string', [
-                'some another',
-                'some string2',
-                'some string',
-                'some str'
-            ]);
-
-            expect(res).to.be.false;
-        });
-
-    });
-
     describe('ensureArray', () => {
 
         it('returns an array when argument is not', () => {
