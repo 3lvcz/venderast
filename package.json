@@ -2,7 +2,7 @@
   "name": "venderast",
   "version": "0.0.5",
   "description": "Frontend vendor packages bundler",
-  "main": "index.js",
+  "main": "./lib/api.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha"
   },
