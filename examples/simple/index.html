@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+    <link rel="stylesheet" href="dist/vendor.css">
+</head>
+<body>
+    <ul class="bxslider">
+        <li><img src="" alt=""></li>
+        <li><img src="" alt=""></li>
+        <li><img src="" alt=""></li>
+        <li><img src="" alt=""></li>
+        <li><img src="" alt=""></li>
+        <li><img src="" alt=""></li>
+    </ul>
+    <script src="dist/vendor.js"></script>
+    <script>
+        $('.bxslider')
+            .find('img')
+                .each(function() {
+                    this.setAttribute('src',
+                        'http://lorempixel.com/400/200/cats?' + Math.random());
+                })
+                .end()
+            .bxSlider();
+    </script>
+</body>
+</html>
