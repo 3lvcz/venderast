@@ -71,7 +71,7 @@ describe('Venderast', () => {
             expect(venderast).to.be.instanceof(Venderast);
         });
 
-        it('does not throws if bunles or modules key values is a strings', () => {
+        it('can apply bundles & modules key values as single strings (not an arrays)', () => {
             const venderast = new Venderast({
                 bundles: { 'vendor.js': 'jquery' },
                 modules: { 'jquery': 'some/path/to/jquery.js' },

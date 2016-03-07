@@ -23,79 +23,39 @@ describe('util', () => {
 
     });
 
-    describe('ensureArrays', () => {
+    describe('distinct', () => {
 
-        it('throws an error when argument cannot be called with Object#keys', () => {
-            expect(() => {
-                util.ensureArrays(null);
-            }).to.throw(Error);
+        it('can work :)', () => {
+            const ar = [1, 1, 2, 1, 3, 2, 5];
+            const ds = util.distinct(ar);
 
-            expect(() => {
-                util.ensureArrays(undefined);
-            }).to.throw(Error);
+            expect(ds).to.have.length(4);
+            expect(ds[0]).to.equal(1);
+            expect(ds[1]).to.equal(2);
+            expect(ds[2]).to.equal(3);
+            expect(ds[3]).to.equal(5);
         });
 
-        it('returns an object', () => {
-            const obj = { a: 7, b: 'some' };
-            const res = util.ensureArrays(obj);
+        it('is a pure function', () => {
+            let ar = [1, 2, 1];
+            const ds = util.distinct(ar);
 
-            expect(typeof obj).to.equal('object');
+            expect(ar).to.not.equal(ds);
+            expect(ar).to.have.length(3);
+            expect(ds).to.have.length(2);
         });
 
-        it('makes each property of an object to be an array', () => {
-            const obj = { a: 7, b: 'some' };
-            const res = util.ensureArrays(obj);
+        it('cast values to strings', () => {
+            const fn1 = function() {};
+            const fn2 = function() {};
+            const fn3 = function(as) {};
 
-            expect(Array.isArray(res.a)).to.be.true;
-            expect(Array.isArray(res.b)).to.be.true;
-        });
+            const ar = [fn1, fn2, fn3];
+            const ds = util.distinct(ar);
 
-        it('is pure function', () => {
-            const obj = { a: 7, b: 'some' };
-            const res = util.ensureArrays(obj);
-
-            expect(typeof obj.a).to.equal('number');
-            expect(typeof obj.b).to.equal('string');
-        });
-
-    });
-
-    describe('collectStats', () => {
-
-        it('returns a Promise', () => {
-            const promised = util.collectStats([]);
-            expect(promised).to.be.instanceof(Promise);
-        });
-
-        it('throws an Error if parameter is not an array', () => {
-            expect(() => {
-                util.collectStats({});
-            }).to.throw(Error);
-        });
-
-        it('resolves a file stat if it exists and no errors was occured else null', done => {
-            const self = path.resolve(__dirname, module.id);
-            const fake = path.resolve(__dirname, uuid.v4());
-
-            const selfMtime = fs.statSync(self).mtime.toJSON();
-            expect(selfMtime).to.be.ok;
-
-            util.collectStats([self, fake]).then(stats => {
-                expect(stats).to.be.instanceof(Array);
-                expect(stats).to.have.length(2);
-
-                expect(stats[0]).to.be.ok;
-                expect(stats[0].path).to.equal(self);
-                expect(stats[0].stat).to.be.ok
-                expect(stats[0].stat.mtime.toJSON())
-                    .to.equal(selfMtime);
-
-                expect(stats[1]).to.be.ok;
-                expect(stats[1].path).to.equal(fake);
-                expect(stats[1].stat).to.be.null;
-
-                done();
-            }).catch(done);
+            expect(ds).to.have.length(2);
+            expect(ds[0]).to.equal(fn1);
+            expect(ds[1]).to.equal(fn3);
         });
 
     });

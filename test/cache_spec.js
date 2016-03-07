@@ -25,7 +25,7 @@ describe('cache', () => {
 
     describe('get', () => {
 
-        it('don\'t creates a file, when is called', () => {
+        it('does not create a file, when is called', () => {
             const cache = new Cache(PATH);
             let stat = null;
 
@@ -67,7 +67,7 @@ describe('cache', () => {
 
     describe('set', () => {
 
-        it('don\'t creates a file, when is called', () => {
+        it('does not create a file, when is called', () => {
             const cache = new Cache(PATH);
             let stat = null;
 
