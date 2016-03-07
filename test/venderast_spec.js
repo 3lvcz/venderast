@@ -3,7 +3,10 @@
 const co = require('co');
 const expect = require('chai').expect;
 const fs = require('../lib/fs');
+const util = require('../lib/util');
 const Venderast = require('../lib/venderast');
+
+const WAIT = 10;
 
 const base_config = {
     bundles: {
@@ -22,7 +25,7 @@ const base_config = {
     dest: __dirname + '/.tmp'
 };
 
-describe('Venderast', () => {
+describe('Venderast', function() {
 
     before(done => {
         new Venderast(base_config).clearCache()
@@ -50,7 +53,7 @@ describe('Venderast', () => {
                 new Venderast({ dest: '', bundles: {} });
             }).to.throw(Error);
         });
-        
+
         it('returns an Venderast object if all parameters is ok', () => {
             const venderast = new Venderast({
                 bundles: { 'vendor.js': ['jquery'] },
@@ -154,6 +157,8 @@ describe('Venderast', () => {
 
                         const sourceContent = fs.readFileSync(sourcePath, 'utf8');
 
+                        yield util.sleep(WAIT);
+
                         yield fs.writeFile(sourcePath, sourceContent, 'utf8');
 
                         yield new Venderast(base_config).bundle('main.js');
@@ -171,6 +176,8 @@ describe('Venderast', () => {
                         yield new Venderast(base_config).bundle('main.js');
 
                         const checkRebuild = rebuildCheck(true);
+
+                        yield util.sleep(WAIT);
 
                         yield new Venderast(base_config).bundle('main.js', true);
 
@@ -282,6 +289,8 @@ describe('Venderast', () => {
 
                         const sourceContent = yield fs.readFile(sourcePath, 'utf8');
 
+                        yield util.sleep(WAIT);
+
                         yield fs.writeFile(sourcePath, sourceContent, 'utf8');
 
                         yield new Venderast(base_config).bundles([
@@ -297,6 +306,8 @@ describe('Venderast', () => {
 
                         const source2Path = base_config.modules.main3;
                         const source2Content = yield fs.readFile(source2Path, 'utf8');
+
+                        yield util.sleep(WAIT);
 
                         yield fs.writeFile(source2Path, source2Content, 'utf8');
 
@@ -321,6 +332,8 @@ describe('Venderast', () => {
                             'main.js', 'main2.js']);
 
                         const checkRebuild = rebuildCheck(true);
+
+                        yield util.sleep(WAIT);
 
                         yield new Venderast(base_config).bundles([
                             'main.js', 'main2.js'], true);
@@ -429,6 +442,8 @@ describe('Venderast', () => {
 
                         const sourceContent = yield fs.readFile(sourcePath, 'utf8');
 
+                        yield util.sleep(WAIT);
+
                         yield fs.writeFile(sourcePath, sourceContent, 'utf8');
 
                         yield new Venderast(base_config).all();
@@ -443,6 +458,8 @@ describe('Venderast', () => {
 
                         const source2Path = base_config.modules.main3;
                         const source2Content = yield fs.readFile(source2Path, 'utf8');
+
+                        yield util.sleep(WAIT);
 
                         yield fs.writeFile(source2Path, source2Content, 'utf8');
 
@@ -465,6 +482,8 @@ describe('Venderast', () => {
                         yield new Venderast(base_config).all();
 
                         const checkRebuild = rebuildCheck(true);
+
+                        yield util.sleep(WAIT);
 
                         yield new Venderast(base_config).all(true);
 
@@ -551,6 +570,8 @@ describe('Venderast', () => {
 
                         const sourceContent = fs.readFileSync(sourcePath, 'utf8');
 
+                        yield util.sleep(WAIT);
+
                         yield fs.writeFile(sourcePath, sourceContent, 'utf8');
 
                         yield new Venderast(config).bundle('main.js');
@@ -568,6 +589,8 @@ describe('Venderast', () => {
                         yield new Venderast(config).bundle('main.js');
 
                         const checkRebuild = rebuildCheck(true);
+
+                        yield util.sleep(WAIT);
 
                         yield new Venderast(config).bundle('main.js', true);
 
@@ -679,6 +702,8 @@ describe('Venderast', () => {
 
                         const sourceContent = yield fs.readFile(sourcePath, 'utf8');
 
+                        yield util.sleep(WAIT);
+
                         yield fs.writeFile(sourcePath, sourceContent, 'utf8');
 
                         yield new Venderast(config).bundles([
@@ -694,6 +719,8 @@ describe('Venderast', () => {
 
                         const source2Path = config.modules.main3;
                         const source2Content = yield fs.readFile(source2Path, 'utf8');
+
+                        yield util.sleep(WAIT);
 
                         yield fs.writeFile(source2Path, source2Content, 'utf8');
 
@@ -718,6 +745,8 @@ describe('Venderast', () => {
                             'main.js', 'main2.js']);
 
                         const checkRebuild = rebuildCheck(true);
+
+                        yield util.sleep(WAIT);
 
                         yield new Venderast(config).bundles([
                             'main.js', 'main2.js'], true);
@@ -826,6 +855,8 @@ describe('Venderast', () => {
 
                         const sourceContent = yield fs.readFile(sourcePath, 'utf8');
 
+                        yield util.sleep(WAIT);
+
                         yield fs.writeFile(sourcePath, sourceContent, 'utf8');
 
                         yield new Venderast(config).all();
@@ -840,6 +871,8 @@ describe('Venderast', () => {
 
                         const source2Path = config.modules.main3;
                         const source2Content = yield fs.readFile(source2Path, 'utf8');
+
+                        yield util.sleep(WAIT);
 
                         yield fs.writeFile(source2Path, source2Content, 'utf8');
 
@@ -862,6 +895,8 @@ describe('Venderast', () => {
                         yield new Venderast(config).all();
 
                         const checkRebuild = rebuildCheck(true);
+
+                        yield util.sleep(WAIT);
 
                         yield new Venderast(config).all(true);
 

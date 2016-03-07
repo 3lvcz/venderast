@@ -1,8 +1,5 @@
 'use strict';
 
-const fs = require('fs');
-const path = require('path');
-const uuid = require('node-uuid');
 const expect = require('chai').expect;
 const util = require('../lib/util');
 
