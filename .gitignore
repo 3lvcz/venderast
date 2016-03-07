@@ -4,6 +4,6 @@
 node_modules
 bower_components
 #VENDERAST CACHE
-.venderast.json
+*.json
 #EXAMPLE BUILDS
 examples/*/dist

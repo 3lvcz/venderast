@@ -50,17 +50,7 @@ describe('Venderast', () => {
                 new Venderast({ dest: '', bundles: {} });
             }).to.throw(Error);
         });
-
-        it('throws an Error if any of modules or bundles are empty', () => {
-            expect(() => {
-                new Venderast({ bundles: {}, modules: {jquery: 'slkdjfs'} });
-            }).to.throw(Error);
-
-            expect(() => {
-                new Venderast({ bundles: {jquery: 'fklsjdf'}, modules: {} });
-            }).to.throw(Error);
-        });
-
+        
         it('returns an Venderast object if all parameters is ok', () => {
             const venderast = new Venderast({
                 bundles: { 'vendor.js': ['jquery'] },
