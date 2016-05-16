@@ -1,0 +1,42 @@
+{
+	"outDir": "dist",
+	"scripts": [
+		{
+			"files": [
+				"bower_components/jquery/dist/jquery.js",
+				"bower_components/jquery-migrate/jquery-migrate.js",
+				"bower_components/bootstrap/dist/js/bootstrap.min.js",
+				"bower_components/bxslider-4/dist/vendor/jquery.easing.1.3.js",
+				"bower_components/bxslider-4/dist/vendor/jquery.fitvids.js",
+				"bower_components/bxslider-4/dist/jquery.bxslider.js"
+			],
+			"force-min": false,
+			"min": true,
+			"name": "vendor"
+		}
+	],
+	"styles": [
+		{
+			"assets": {
+				"base": "/public/dist/assets/vendor",
+				"outDir": "dist/assets/vendor",
+				"rename": "guid"
+			},
+			"files": [
+				"bower_components/bootstrap/dist/css/bootstrap.min.css",
+				"bower_components/bxslider-4/dist/jquery.bxslider.css"
+			],
+			"force-min": false,
+			"min": true,
+			"name": "vendor"
+		},
+		{
+			"files": [
+				"src/styles.less"
+			],
+			"force-min": false,
+			"min": true,
+			"name": "styles"
+		}
+	]
+}

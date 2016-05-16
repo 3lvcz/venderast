@@ -1,0 +1,16 @@
+{
+  "name": "venderast-examples-example2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "build": "./node_modules/.bin/gulp"
+  },
+  "keywords": [],
+  "author": "3lvcz",
+  "license": "MIT",
+  "dependencies": {
+    "gulp": "^3.9.1"
+  }
+}
