@@ -48,7 +48,7 @@ module.exports = function(config) {
 						var target;
 
 						while ((res = reg.exec(content)) !== null) {
-							if (/^data:/i.test(res[1]) || /^https?:\/\//i.test(res[1])) {
+							if (/^(data:|https?:|#)/.test(res[1])) {
 								continue;
 							}
 
