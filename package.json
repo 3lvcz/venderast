@@ -1,11 +1,8 @@
 {
   "name": "venderast",
-  "version": "0.0.7",
-  "description": "Frontend vendor packages bundler",
+  "version": "0.0.8",
+  "description": "Frontend packages bundler",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "keywords": [
     "vendor",
     "bundler"

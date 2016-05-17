@@ -66,9 +66,9 @@ module.exports = function(config) {
 function runScriptBundlePipeline(bundle, bundleName, preset, outDir) {
 	var pipeline = gulp.src(bundle.files);
 
-	// REMOVE COMMENTS
+	// REMOVE SOURCEMAPS COMMENTS
 	if (preset.minification) {
-		pipeline = pipeline.pipe(removeComments());
+		pipeline = pipeline.pipe(removeSourcemapComments());
 	}
 
 	// INITIALIZE SOURCEMAPS
@@ -100,9 +100,9 @@ function runScriptBundlePipeline(bundle, bundleName, preset, outDir) {
 function runStyleBundlePipeline(bundle, bundleName, preset, outDir, assets) {
 	var pipeline = gulp.src(bundle.files);
 
-	// REMOVE COMMENTS
+	// REMOVE SOURCEMAPS COMMENTS
 	if (preset.minification) {
-		pipeline = pipeline.pipe(removeComments());
+		pipeline = pipeline.pipe(removeSourcemapComments());
 	}
 
 	// INITIALIZE SOURCEMAPS
@@ -125,7 +125,7 @@ function runStyleBundlePipeline(bundle, bundleName, preset, outDir, assets) {
 
 	// MINIFICATION
 	if (preset.minification) {
-		pipeline = preset.preminified ? pipeline.pipe(_if(isNotMin, cleanCss())) : pipeline.pipe(cleanCss());
+		pipeline = preset.preminified ? pipeline.pipe(_if(isNotMin, cleanCss({ keepSpecialComments: 0 }))) : pipeline.pipe(cleanCss({ keepSpecialComments: 0 }));
 	}
 
 	// CONCATENATION
@@ -144,9 +144,10 @@ function runStyleBundlePipeline(bundle, bundleName, preset, outDir, assets) {
 	}
 }
 
-function removeComments() {
+function removeSourcemapComments() {
+	var reg = /(^|[^\/])\/\*#\s*sourceMappingURL\s*=\s*[\w\.]+\.map\s*\*\//g;
 	return through(function(file, enc, callback) {
-		file.contents = new Buffer(file.contents.toString().replace(/\/\*[\w\W]*?\*\//g, ''));
+		file.contents = new Buffer(file.contents.toString().replace(reg, ''));
 		callback(null, file);
 	});
 }
