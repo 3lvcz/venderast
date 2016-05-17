@@ -1,4 +1,8 @@
 {
+	"assets": {
+		"base": "/public/dist/assets",
+		"outDir": "dist/assets"
+	},
 	"outDir": "dist",
 	"presets": {
 		"common-style": {
@@ -7,11 +11,7 @@
 			"sourcemaps": true
 		},
 		"vendor-style": {
-			"assets": {
-				"base": "/public/dist/assets/vendor",
-				"outDir": "dist/assets/vendor",
-				"rename": "guid"
-			},
+			"assets": true,
 			"minification": true,
 			"preminified": true
 		},
@@ -24,12 +24,12 @@
 		"vendor": {
 			"preset": "vendor-script",
 			"files": [
-				"bower_components/jquery/dist/jquery.js",
-				"bower_components/jquery-migrate/jquery-migrate.js",
+				"bower_components/jquery/dist/jquery.min.js",
+				"bower_components/jquery-migrate/jquery-migrate.min.js",
 				"bower_components/bootstrap/dist/js/bootstrap.min.js",
 				"bower_components/bxslider-4/dist/vendor/jquery.easing.1.3.js",
 				"bower_components/bxslider-4/dist/vendor/jquery.fitvids.js",
-				"bower_components/bxslider-4/dist/jquery.bxslider.js"
+				"bower_components/bxslider-4/dist/jquery.bxslider.min.js"
 			]
 		}
 	},
@@ -44,7 +44,7 @@
 			"preset": "vendor-style",
 			"files": [
 				"bower_components/bootstrap/dist/css/bootstrap.min.css",
-				"bower_components/bxslider-4/dist/jquery.bxslider.css"
+				"bower_components/bxslider-4/dist/jquery.bxslider.min.css"
 			]
 		}
 	}

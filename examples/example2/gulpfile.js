@@ -1,9 +1,7 @@
 var gulp = require('gulp');
 var venderast = require('../../');
-var config = require('./venderast.json');
+var config = require('./bundle.config.json');
 
-gulp.task('vendor', function(callback) {
+gulp.task('default', function() {
 	return venderast(config);
 });
-
-gulp.task('default', ['vendor']);

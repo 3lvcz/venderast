@@ -1,5 +1,6 @@
+var fs = require('fs-extra');
 var path = require('path');
-var co = require('co');
+var uuid = require('node-uuid');
 var gulp = require('gulp');
 var _if = require('gulp-if');
 var concat = require('gulp-concat');
@@ -19,18 +20,27 @@ module.exports = function(config) {
 		throw Error('No `outDir` provided');
 	}
 
+	if (config.assets) {
+		if (!config.assets.base) throw Error('`assets` must provide `base` property!');
+		if (!config.assets.outDir) throw Error('`assets` must provide `outDir` property!');
+
+		fs.removeSync(path.resolve(config.assets.outDir));
+	}
+
 	var scriptBundleNames = config.scripts ? Object.keys(config.scripts) : [];
 	var styleBundleNames = config.styles ? Object.keys(config.styles) : [];
 
-	return co(function *() {
-		for (var i = 0; i < scriptBundleNames.length; i++) {
-			yield process(config, 'scripts', scriptBundleNames[i]);
-		}
+	var jobs = [];
 
-		for (var i = 0; i < styleBundleNames.length; i++) {
-			yield process(config, 'styles', styleBundleNames[i]);
-		}
-	});
+	for (var i = 0; i < scriptBundleNames.length; i++) {
+		jobs.push(process(config, 'scripts', scriptBundleNames[i]));
+	}
+
+	for (var i = 0; i < styleBundleNames.length; i++) {
+		jobs.push(process(config, 'styles', styleBundleNames[i]));
+	}
+
+	return Promise.all(jobs);
 
 	function process(config, category, bundleName) {
 		var bundle = config[category][bundleName];
@@ -42,9 +52,9 @@ module.exports = function(config) {
 
 		if (!preset) return Promise.reject(Error('Preset `' + bundle.preset + '` for bundle `' + bundleName + '` is not found!'));
 
-		var bundlePipeline = category === 'scripts' ? getScriptBundlePipeline : getStyleBundlePipeline;
-
-		var stream = bundlePipeline(bundle, bundleName, preset, config.outDir);
+		var stream = category === 'scripts'
+			? runScriptBundlePipeline(bundle, bundleName, preset, config.outDir)
+			: runStyleBundlePipeline(bundle, bundleName, preset, config.outDir, config.assets);
 
 		return new Promise(function(resolve, reject) {
 			stream.on('end', resolve);
@@ -53,7 +63,7 @@ module.exports = function(config) {
 	}
 };
 
-function getScriptBundlePipeline(bundle, bundleName, preset, outDir) {
+function runScriptBundlePipeline(bundle, bundleName, preset, outDir) {
 	var pipeline = gulp.src(bundle.files);
 
 	// REMOVE COMMENTS
@@ -87,7 +97,7 @@ function getScriptBundlePipeline(bundle, bundleName, preset, outDir) {
 	}
 }
 
-function getStyleBundlePipeline(bundle, bundleName, preset, outDir) {
+function runStyleBundlePipeline(bundle, bundleName, preset, outDir, assets) {
 	var pipeline = gulp.src(bundle.files);
 
 	// REMOVE COMMENTS
@@ -102,6 +112,11 @@ function getStyleBundlePipeline(bundle, bundleName, preset, outDir) {
 
 	// LESS
 	pipeline = pipeline.pipe(_if(/\.less$/i, less()));
+
+	// ASSETS
+	if (preset.assets) {
+		pipeline = pipeline.pipe(handleAssets(assets.base, assets.outDir));
+	}
 
 	// AUTOPREFIXER
 	if (preset.autoprefixer) {
@@ -136,193 +151,35 @@ function removeComments() {
 	});
 }
 
-// function handleScriptBundle(bundle, bundleName, preset, outDir) {
-// 	return co(function *() {
-// 		var content = '';
+var assetCache = {};
 
-// 		for (var i = 0; i < bundle.files.length; i++) {
-// 			var file = bundle.files[i];
-// 			var fileContent = fs.readFileSync(file, 'utf8');
+function handleAssets(base, outDir) {
+	var reg = /url\((?:'|")?([^'"\/][^#?'"\)]+)[^\)]*\)/gi;
 
-// 			content += '/* bundle: ' + bundle.name + ' */\r\n';
-// 			content += '/* source path: ' + file + '*/\r\n';
+	return through(function(file, enc, callback) {
+		var contents = file.contents.toString();
+		var res;
 
-// 			if (preset.preminified && /\.min\.js$/i.test(path.basename(file)) || !preset.minification) {
-// 				content += fileContent + '\r\n\r\n';
-// 				continue;
-// 			}
+		while((res = reg.exec(contents)) !== null) {
+			if (/^(data:|https?:|#)/.test(res[1])) {
+				continue;
+			}
 
-// 			var uglifyResult = uglify.minify(fileContent, { fromString: true });
+			var assetPath = path.join(file.base, res[1]);
 
-// 			content += uglifyResult.code + '\r\n\r\n';
-// 		}
+			if (!assetCache[assetPath]) {
+				var targetName = uuid.v4() + path.extname(assetPath);
 
-// 		fs.ensureDirSync(outDir);
+				fs.copySync(assetPath, path.join(outDir, targetName));
 
-// 		fs.writeFileSync(path.join(outDir, bundleName) + '.js', content);
-// 	});
-// }
+				assetCache[assetPath] = targetName;
+			}
 
+			contents = contents.replace(res[1], path.join(base, assetCache[assetPath]).replace(/\\/g, '/'));
+		}
 
-// var path = require('path');
-// var uuid = require('node-uuid');
-// var co = require('co');
-// var fs = require('fs-extra');
-// var postcss = require('postcss');
-// var autoprefixer = require('autoprefixer');
-// var uglify = require('uglify-js');
-// var less = require('less');
-// var CleanCss = require('clean-css');
+		file.contents = new Buffer(contents);
 
-// module.exports = function(config) {
-// 	return co(function *() {
-// 		if (!config) {
-// 			throw Error('No config provided');
-// 		}
-
-// 		if (!config.outDir) {
-// 			throw Error('No `outDir` provided');
-// 		}
-
-// 		var scriptBundleNames = config.scripts ? Object.keys(config.scripts) : [];
-// 		var styleBundleNames = config.styles ? Object.keys(config.styles) : [];
-
-// 		for (var i = 0; i < scriptBundleNames.length; i++) {
-// 			var bundleName = scriptBundleNames[i];
-// 			var bundle = config.scripts[bundleName];
-// 			var preset = config.presets[bundle.preset];
-
-// 			if (!bundle) {
-// 				throw Error('Bundle with name `' + bundleName + '` is not found!');
-// 			}
-
-// 			if (!bundle.preset) {
-// 				throw Error('Bundle `' + bundleName + '` has no preset!');
-// 			}
-
-// 			if (!preset) {
-// 				throw Error('Preset `' + bundle.preset + '` for bundle `' + bundleName + '` is not found!');
-// 			}
-
-// 			yield handleScriptBundle(bundle, bundleName, preset, config.outDir);
-// 		}
-
-// 		for (var i = 0; i < styleBundleNames.length; i++) {
-// 			var bundleName = styleBundleNames[i];
-// 			var bundle = config.styles[bundleName];
-// 			var preset = config.presets[bundle.preset];
-
-// 			if (!bundle) {
-// 				throw Error('Bundle with name `' + bundleName + '` is not found!');
-// 			}
-
-// 			if (!bundle.preset) {
-// 				throw Error('Bundle `' + bundleName + '` has no preset!');
-// 			}
-
-// 			if (!preset) {
-// 				throw Error('Preset `' + bundle.preset + '` for bundle `' + bundleName + '` is not found!');
-// 			}
-
-// 			yield handleStyleBundle(bundle, bundleName, preset, config.outDir);
-// 		}
-// 	});
-
-// 	// bundles.forEach(function(filename) {
-// 	// 	var assetCache = {};
-// 	// 	var content = '';
-// 	// 	var endPath = '';
-
-// 	// 	switch (path.extname(filename)) {
-// 	// 		case '.css':
-// 	// 			fse.emptyDirSync(config.assets.dest);
-
-// 	// 			config.bundles[filename].forEach(function(moduleName) {
-// 	// 				var moduleStyles = ensureArray(config.modules[moduleName]).filter(function(filepath) {
-// 	// 					return /\.css$/.test(filepath);
-// 	// 				}).map(function(filepath) {
-// 	// 					var content = fs.readFileSync(filepath, {encoding: 'utf8'});
-// 	// 					var reg = /url\((?:'|")?([^'"\/][^#?'"\)]+)[^\)]*\)/gi;
-// 	// 					var res = null;
-// 	// 					var asset;
-// 	// 					var target;
-
-// 	// 					while ((res = reg.exec(content)) !== null) {
-// 	// 						if (/^(data:|https?:|#)/.test(res[1])) {
-// 	// 							continue;
-// 	// 						}
-
-// 	// 						asset = path.join(filepath, '../', res[1]);
-
-// 	// 						if (!assetCache[asset]) {
-
-// 	// 							target = uuid.v4() + path.extname(asset);
-
-// 	// 							fse.copySync(asset, path.join(config.assets.dest, target));
-
-// 	// 							assetCache[asset] = target;
-// 	// 						}
-
-// 	// 						content = content.replace(res[1], path.join(config.assets.base, assetCache[asset]).replace(/\\/g, '/'));
-// 	// 					}
-
-// 	// 					return content;
-
-// 	// 					//return fs.readFileSync(filepath, {encoding: 'utf8'});
-// 	// 				}).join('\n/* - - - - - - - - - - */\n');
-
-// 	// 				content += '/* ' + moduleName + ' */\n' + new CleanCSS({keepSpecialComments: 0}).minify(moduleStyles).styles + '\n\n';
-// 	// 			});
-
-// 	// 			endPath = path.join(config.dist, filename);
-
-// 	// 			fse.ensureDirSync(config.dist);
-
-// 	// 			fs.writeFileSync(endPath, content);
-// 	// 			break;
-// 	// 	}
-// 	// });
-// };
-
-
-
-// function handleStyleBundle(bundle, bundleName, preset, outDir) {
-// 	return co(function *() {
-// 		var content = '';
-
-// 		for (var i = 0; i < bundle.files.length; i++) {
-// 			var file = bundle.files[i];
-// 			var fileContent = fs.readFileSync(file, 'utf8');
-// 			var isLess = path.extname(file) === '.less';
-// 			var isMin = !isLess && /\.min\.css/i.test(path.basename(file));
-
-// 			content += '/* bundle: ' + bundle.name + ' */\r\n';
-// 			content += '/* source path: ' + file + '*/\r\n';
-
-// 			if (isLess) {
-// 				var lessResult = yield less.render(fileContent, { filename: path.resolve(file), sourceMap: {} });
-
-// 				console.log('mapping: ' + lessResult.map);
-
-// 				fileContent = lessResult.css;
-// 			}
-
-// 			if (preset.autoprefixer) {
-// 				var autoprefixerResult = yield postcss([ autoprefixer({ browsers: ['last 5 versions', '> 5%'] }) ]).process(fileContent);
-
-// 				fileContent = autoprefixerResult.css;
-// 			}
-
-// 			if (preset.preminified && isMin || !preset.minification) {
-// 				content += fileContent + '\r\n\r\n';
-// 				continue;
-// 			}
-
-// 			content += new CleanCss().minify(fileContent).styles + '\r\n\r\n';
-// 		}
-
-// 		fs.ensureDirSync(outDir);
-
-// 		fs.writeFileSync(path.join(outDir, bundleName) + '.css', content);
-// 	});
-// }
+		callback(null, file);
+	});
+}
