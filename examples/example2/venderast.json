@@ -1,7 +1,28 @@
 {
 	"outDir": "dist",
-	"scripts": [
-		{
+	"presets": {
+		"common-style": {
+			"autoprefixer": true,
+			"minification": true,
+			"sourcemaps": true
+		},
+		"vendor-style": {
+			"assets": {
+				"base": "/public/dist/assets/vendor",
+				"outDir": "dist/assets/vendor",
+				"rename": "guid"
+			},
+			"minification": true,
+			"preminified": true
+		},
+		"vendor-script": {
+			"minification": true,
+			"preminified": true
+		}
+	},
+	"scripts": {
+		"vendor": {
+			"preset": "vendor-script",
 			"files": [
 				"bower_components/jquery/dist/jquery.js",
 				"bower_components/jquery-migrate/jquery-migrate.js",
@@ -9,34 +30,22 @@
 				"bower_components/bxslider-4/dist/vendor/jquery.easing.1.3.js",
 				"bower_components/bxslider-4/dist/vendor/jquery.fitvids.js",
 				"bower_components/bxslider-4/dist/jquery.bxslider.js"
-			],
-			"force-min": false,
-			"min": true,
-			"name": "vendor"
+			]
 		}
-	],
-	"styles": [
-		{
-			"assets": {
-				"base": "/public/dist/assets/vendor",
-				"outDir": "dist/assets/vendor",
-				"rename": "guid"
-			},
+	},
+	"styles": {
+		"common": {
+			"preset": "common-style",
+			"files": [
+				"src/styles.less"
+			]
+		},
+		"vendor": {
+			"preset": "vendor-style",
 			"files": [
 				"bower_components/bootstrap/dist/css/bootstrap.min.css",
 				"bower_components/bxslider-4/dist/jquery.bxslider.css"
-			],
-			"force-min": false,
-			"min": true,
-			"name": "vendor"
-		},
-		{
-			"files": [
-				"src/styles.less"
-			],
-			"force-min": false,
-			"min": true,
-			"name": "styles"
+			]
 		}
-	]
+	}
 }
